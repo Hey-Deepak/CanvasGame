@@ -34,9 +34,14 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyScreen() {
-    val points by remember {
+    var points by remember {
         mutableStateOf(0)
     }
+    var isTimerRunning by remember {
+        mutableStateOf(false)
+    }
+
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -52,11 +57,15 @@ fun MyScreen() {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
-            Button(onClick = { })
+            Button(onClick = {
+                isTimerRunning =! isTimerRunning
+            })
             {
-                Text(text = "Start")
+                if (isTimerRunning) Text(text = "Reset") else Text(text = "Start")
             }
-            CountdownTimer()
+            CountdownTimer(isTimerRunning = isTimerRunning){
+                    isTimerRunning = false
+            }
         }
     }
 }
@@ -81,7 +90,7 @@ fun CountdownTimer(
         } else onTimerEnd()
     }
     Text(
-        text = "$curTime",
+        text = (curTime / 1000).toString(),
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp
     )
