@@ -59,6 +59,7 @@ fun MyScreen() {
             )
             Button(onClick = {
                 isTimerRunning =! isTimerRunning
+                points = 0
             })
             {
                 if (isTimerRunning) Text(text = "Reset") else Text(text = "Start")
