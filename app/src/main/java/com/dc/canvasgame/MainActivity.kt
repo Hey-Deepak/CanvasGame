@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
@@ -11,12 +13,19 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dc.canvasgame.ui.theme.CanvasGameTheme
 import kotlinx.coroutines.delay
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.sqrt
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,15 +67,19 @@ fun MyScreen() {
                 fontWeight = FontWeight.Bold
             )
             Button(onClick = {
-                isTimerRunning =! isTimerRunning
+                isTimerRunning = !isTimerRunning
                 points = 0
-            })
-            {
+            }) {
                 if (isTimerRunning) Text(text = "Reset") else Text(text = "Start")
             }
-            CountdownTimer(isTimerRunning = isTimerRunning){
-                    isTimerRunning = false
+            CountdownTimer(isTimerRunning = isTimerRunning) {
+                isTimerRunning = false
             }
+        }
+        BallClicker(
+            enabled = isTimerRunning
+        ){
+            points++
         }
     }
 }
@@ -96,6 +109,62 @@ fun CountdownTimer(
         fontSize = 16.sp
     )
 }
+
+@Composable
+fun BallClicker(
+    radius: Float = 100f,
+    enabled: Boolean = false,
+    ballColor: Color = Color.Red,
+    onBallCliked: () -> Unit = {}
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+
+        var ballPosition by remember {
+            mutableStateOf(
+                randomOffset(
+                    radius = radius,
+                    width = constraints.maxWidth,
+                    height = constraints.maxHeight
+                )
+            )
+        }
+        Canvas(modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(enabled) {
+                if (!enabled) {
+                    return@pointerInput
+                }
+                detectTapGestures {
+                    val distance = sqrt(
+                        (it.x - ballPosition.x).pow(2) - (it.y - ballPosition.y).pow(2)
+                    )
+                    if (distance <= radius) {
+                        ballPosition = randomOffset(
+                            radius = radius,
+                            width = constraints.maxWidth,
+                            height = constraints.maxHeight
+                        )
+                        onBallCliked()
+                    }
+                }
+            }) {
+            drawCircle(
+                color = ballColor,
+                center = ballPosition,
+                radius = radius
+            )
+
+        }
+    }
+}
+
+private fun randomOffset(radius: Float, width: Int, height: Int): Offset {
+    return Offset(
+        x = Random.nextInt(radius.toInt(), width - radius.toInt()).toFloat(),
+        y = Random.nextInt(radius.toInt(), height - radius.toInt()).toFloat()
+    )
+}
+
 
 @Preview(showBackground = true)
 @Composable
