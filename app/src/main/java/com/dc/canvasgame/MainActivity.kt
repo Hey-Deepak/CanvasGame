@@ -99,7 +99,7 @@ fun CountdownTimer(
             return@LaunchedEffect
         }
         if (curTime > 0) {
-            delay(1000)
+            delay(100)
             curTime -= 1000
         } else onTimerEnd()
     }
